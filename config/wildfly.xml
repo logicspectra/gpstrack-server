@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+
+<server xmlns="urn:jboss:domain:4.0">
+
+  <profile>
+    <subsystem xmlns="urn:jboss:domain:undertow:3.0">
+        <buffer-cache name="default"/>
+        <server name="default-server">
+            <http-listener name="default" socket-binding="http" 
+              proxy-address-forwarding="true" redirect-socket="proxy-https"/>
+            <host name="default-host" alias="localhost">
+                <location name="/" handler="welcome-content"/>
+                
+                <!-- 
+                  For more info on access-log strings
+                  https://github.com/undertow-io/undertow/blob/1.0.0.Final/core/src/main/java/io/undertow/server/handlers/accesslog/AccessLogHandler.java
+                -->
+                 <access-log use-server-log="true" 
+                  pattern="Host:%h Bytes:%B ProcesingTime:%D Status:%s thread:&quot;%I&quot; REQ:&quot;%r&quot;"/>
+                 </host>
+        </server>
+        <servlet-container name="default">
+            <jsp-config/>
+            <websockets/>
+        </servlet-container>
+        <handlers>
+            <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+        </handlers>
+        <filters>
+        </filters>
+    </subsystem>
+   
+    <subsystem xmlns="urn:jboss:domain:logging:3.0">
+           <console-handler name="CONSOLE" autoflush="true">
+               <level name="INFO"/>
+               <formatter>
+                  <named-formatter name="PATTERN"/>
+              </formatter>
+           </console-handler>
+        <root-logger>
+             <level name="INFO"/>
+             <handlers>
+                <handler name="CONSOLE"/>
+                <!--  <handler name="FILE"/> -->
+             </handlers>
+        </root-logger>
+   
+        <formatter name="PATTERN">
+           <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+        </formatter>
+     </subsystem>
+
+  </profile>
+
+  <interfaces>
+      <interface name="management">
+          <inet-address value="${jboss.bind.address.management:0.0.0.0}"/>
+      </interface>
+      <interface name="public">
+          <inet-address value="${jboss.bind.address:0.0.0.0}"/>
+      </interface>
+
+    <!-- Needed for JMS client -->
+     <interface name="jgroups-intf">
+         <nic name="eth0"/>
+     </interface>
+  </interfaces>
+
+  <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
+    <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+    <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+    <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+    <socket-binding name="http" port="${jboss.http.port:8080}"/>
+    <socket-binding name="https" port="${jboss.https.port:8443}"/>
+    <socket-binding name="txn-recovery-environment" port="4712"/>
+    <socket-binding name="txn-status-manager" port="4713"/>
+    <socket-binding name="proxy-https" port="443"/>
+    <outbound-socket-binding name="mail-smtp">
+        <remote-destination host="localhost" port="25"/>
+    </outbound-socket-binding>
+
+    <!-- Needed for JMS client -->
+    <socket-binding name="jgroups-mping" interface="jgroups-intf" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
+    <socket-binding name="jgroups-tcp" interface="jgroups-intf" port="7600"/>
+    <socket-binding name="jgroups-tcp-fd" interface="jgroups-intf" port="57600"/>
+    <socket-binding name="jgroups-udp" interface="jgroups-intf" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
+    <socket-binding name="jgroups-udp-fd" interface="jgroups-intf" port="54200"/>
+    <socket-binding name="jgroups-tcp-hq" interface="jgroups-intf" port="7660"/>
+    <socket-binding name="jgroups-tcp-hq-fd" interface="jgroups-intf" port="7670"/>
+    <socket-binding name="modcluster" interface="jgroups-intf" port="0" multicast-address="224.0.1.188" multicast-port="23364"/>
+  </socket-binding-group>
+
+</server>
