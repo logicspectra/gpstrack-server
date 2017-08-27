@@ -14,7 +14,7 @@
             <property name="javax.persistence.schema-generation.create-script-source" value="META-INF/create-script.sql"/>
              -->
             <property name="javax.persistence.sql-load-script-source" value="META-INF/load-script.sql"/>
-            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/> 
     </properties>
   </persistence-unit>

@@ -3,13 +3,22 @@ package com.logicspectra.gpstrack.common;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.ext.Provider;
 import javax.xml.bind.DatatypeConverter;
 
+import com.logicspectra.gpstrack.resource.UserResource;
+import com.logicspectra.gpstrack.server.GPSTrackRepository;
+
+@Provider
 public class AuthenticationFilter implements ContainerRequestFilter {
 
+	@Inject
+	private GPSTrackRepository repository;
+	
 	private static final Logger logger = Logger.getLogger(AuthenticationFilter.class.getName());
 
 	public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -22,6 +31,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			throw new WebApplicationException("UnAuthorization Exception");
 		}
 		String[] auth = decodeBasicAuthentication(authHeader);
+		
+		logger.info("UserName : "+auth[0]+" ,Password : "+auth[1]);
+		
 		String requestedAction = requestContext.getMethod();
 		if ("get".equalsIgnoreCase(requestedAction))
 			requestedAction = "read";
@@ -29,6 +41,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			requestedAction = "update";
 		
 		String password = getUserPassword(auth[0]);
+		logger.info("Password from db :"+password);
         if (password == null)
         	throw new WebApplicationException("UnAuthorization Exception");
         if (!basicAuthenticate(password, auth))
@@ -62,9 +75,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 		return password;
 	}
 	
-	private String getUserPassword(String requestedUserName) {
-        //get Password from DataBase;
-        return "password";
+	private String getUserPassword(String userName) {
+		logger.info("searching user with emailid :"+userName); 
+		//get password from data base
+		UserResource user =repository.getUser(userName);
+		logger.info("User Found : :"+user); 
+		return user.getPassword();
     }
 
 }
