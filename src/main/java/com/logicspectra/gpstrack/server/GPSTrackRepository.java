@@ -10,6 +10,7 @@ import javax.persistence.PersistenceContext;
 
 import com.logicspectra.gpstrack.resource.DeviceResource;
 import com.logicspectra.gpstrack.resource.LocationResource;
+import com.logicspectra.gpstrack.resource.UserResource;
 
 @ApplicationScoped
 public class GPSTrackRepository {
@@ -62,6 +63,16 @@ public class GPSTrackRepository {
 			return null;
 		}
 		return entity.toLocationResource();
+	}
+	
+	public UserResource getUser(String email) {
+		log.info("Seraching User with email Id :" + email);
+		UserEntity entity = em.find(UserEntity.class, email);
+		if (entity == null) {
+			log.info("No User found with emailId :" + email);
+			return null;
+		}
+		return entity.toUserResource();
 	}
 
 }
